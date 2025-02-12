@@ -60,8 +60,6 @@ def main():
 
     except KeyboardInterrupt:
         print('Interrupted')
-        pipeline.set_state(Gst.State.NULL)
-        return 0
     finally:
         pipeline.set_state(Gst.State.NULL)
 
