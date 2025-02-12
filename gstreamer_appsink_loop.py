@@ -2,6 +2,7 @@ import gi
 gi.require_version('Gst', '1.0')
 from gi.repository import Gst, GLib
 import cv2 
+import numpy as np
 
 def main():
     """
@@ -16,7 +17,7 @@ def main():
     # The pipeline:
     # videotestsrc -> videoconvert -> video/x-raw, format=RGB -> appsink
     pipeline_str = (
-        "videotestsrc num-buffers=10 ! "
+        "videotestsrc num-buffers=300 ! "
         "videoconvert ! "
         "video/x-raw, format=RGB ! "
         "appsink name=mysink max-buffers=1 drop=true"
@@ -53,6 +54,20 @@ def main():
             height = caps.get_structure(0).get_value("height")
             print(f'Width: {width}, Height: {height})')
 
+            # Convert the buffer data to a NumPy array
+            frame_data = map_info.data
+            frame = np.frombuffer(frame_data, dtype=np.uint8)
+            frame = frame.reshape(height, width, 3)
+
+            # Display the frame using OpenCV
+            cv2.imshow("Frame", frame)
+
+            # Wait for a key press
+            key = cv2.waitKey(1)
+            
+
+            
+
             # Unmap the buffer
             buf.unmap(map_info)
             # Release the buffer
@@ -61,7 +76,10 @@ def main():
     except KeyboardInterrupt:
         print('Interrupted')
     finally:
-        pipeline.set_state(Gst.State.NULL)
+        # Stop the pipeline
+        pipeline.set_state(Gst.State.NULL) 
+        # Close any OpenCV windows
+        cv2.destroyAllWindows() 
 
 
 
